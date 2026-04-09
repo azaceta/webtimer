@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Countdown Timer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a0a0a 0%, #2d1414 50%, #3d1a1a 100%);
+            background-size: 400% 400%;
+            animation: gradientShift 15s ease infinite;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Subtle radial glow effect */
+        body::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 80%;
+            height: 80%;
+            background: radial-gradient(circle, rgba(220, 20, 60, 0.15) 0%, transparent 70%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        @keyframes gradientShift {
+            0% {
+                background-position: 0% 50%;
+            }
+            50% {
+                background-position: 100% 50%;
+            }
+            100% {
+                background-position: 0% 50%;
+            }
+        }
+
+        /* Animated hearts and flames background */
+        .heart {
+            position: absolute;
+            font-size: 2.5rem;
+            opacity: 0;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .heart:nth-child(1) {
+            content: '❤️';
+            left: 10%;
+            animation: floatHeart 18s infinite;
+        }
+
+        .heart:nth-child(2) {
+            content: '💕';
+            left: 25%;
+            animation: floatHeart 22s infinite 3s;
+        }
+
+        .heart:nth-child(3) {
+            content: '💖';
+            left: 40%;
+            animation: floatHeart 20s infinite 6s;
+        }
+
+        .heart:nth-child(4) {
+            content: '💗';
+            left: 60%;
+            animation: floatHeart 24s infinite 2s;
+        }
+
+        .heart:nth-child(5) {
+            content: '💓';
+            left: 75%;
+            animation: floatHeart 19s infinite 8s;
+        }
+
+        .heart:nth-child(6) {
+            content: '💝';
+            left: 90%;
+            animation: floatHeart 21s infinite 5s;
+        }
+
+        .flame {
+            position: absolute;
+            font-size: 2rem;
+            opacity: 0;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .flame:nth-child(7) {
+            content: '🔥';
+            left: 15%;
+            animation: floatFlame 16s infinite 1s;
+        }
+
+        .flame:nth-child(8) {
+            content: '🔥';
+            left: 35%;
+            animation: floatFlame 18s infinite 4s;
+        }
+
+        .flame:nth-child(9) {
+            content: '🔥';
+            left: 55%;
+            animation: floatFlame 17s infinite 7s;
+        }
+
+        .flame:nth-child(10) {
+            content: '🔥';
+            left: 80%;
+            animation: floatFlame 19s infinite 3s;
+        }
+
+        .pinch {
+            position: absolute;
+            font-size: 2rem;
+            opacity: 0;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .pinch:nth-child(11) {
+            content: '🤏';
+            left: 20%;
+            animation: floatPinch 20s infinite 2s;
+        }
+
+        .pinch:nth-child(12) {
+            content: '🤏';
+            left: 50%;
+            animation: floatPinch 22s infinite 6s;
+        }
+
+        .pinch:nth-child(13) {
+            content: '🤏';
+            left: 70%;
+            animation: floatPinch 21s infinite 9s;
+        }
+
+        @keyframes floatHeart {
+            0% {
+                transform: translateY(0) rotate(0deg) scale(0.8);
+                opacity: 0;
+            }
+            10% {
+                opacity: 0.4;
+            }
+            50% {
+                opacity: 0.5;
+            }
+            90% {
+                opacity: 0.4;
+            }
+            100% {
+                transform: translateY(110vh) rotate(360deg) scale(1.2);
+                opacity: 0;
+            }
+        }
+
+        @keyframes floatFlame {
+            0% {
+                transform: translateY(0) rotate(0deg) scale(0.7);
+                opacity: 0;
+            }
+            10% {
+                opacity: 0.5;
+            }
+            50% {
+                opacity: 0.6;
+                transform: translateY(50vh) rotate(180deg) scale(1);
+            }
+            90% {
+                opacity: 0.5;
+            }
+            100% {
+                transform: translateY(110vh) rotate(360deg) scale(1.3);
+                opacity: 0;
+            }
+        }
+
+        @keyframes floatPinch {
+            0% {
+                transform: translateY(0) rotate(-20deg) scale(0.8);
+                opacity: 0;
+            }
+            10% {
+                opacity: 0.45;
+            }
+            50% {
+                opacity: 0.5;
+                transform: translateY(50vh) rotate(20deg) scale(1.1);
+            }
+            90% {
+                opacity: 0.45;
+            }
+            100% {
+                transform: translateY(110vh) rotate(-20deg) scale(1.3);
+                opacity: 0;
+            }
+        }
+
+        .timer-container {
+            text-align: center;
+            padding: 2rem;
+            position: relative;
+            z-index: 10;
+        }
+
+        .timer-display {
+            font-size: clamp(4rem, 15vw, 12rem);
+            font-weight: 700;
+            color: transparent;
+            letter-spacing: 0.15em;
+            font-variant-numeric: tabular-nums;
+        }
+
+        @keyframes subtleGradientFlow {
+            0% {
+                background-position: 0% 50%;
+            }
+            50% {
+                background-position: 100% 50%;
+            }
+            100% {
+                background-position: 0% 50%;
+            }
+        }
+
+        .timer-display.pulse {
+            animation: subtlePulse 0.6s ease-in-out, subtleGradientFlow 10s ease infinite;
+        }
+
+        @keyframes subtlePulse {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.03);
+            }
+        }
+
+        .separator {
+            display: inline-block;
+            background: linear-gradient(135deg, #FFD700, #FF69B4, #FF1493);
+            background-size: 200% 200%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: heartbeat 1.5s ease-in-out infinite, subtleGradientFlow 10s ease infinite;
+            filter: drop-shadow(0 0 8px rgba(255, 20, 147, 0.4));
+        }
+
+        @keyframes heartbeat {
+            0%, 100% {
+                transform: scale(1);
+            }
+            25% {
+                transform: scale(1.1);
+            }
+            50% {
+                transform: scale(1);
+            }
+        }
+
+        .time-unit {
+            display: inline-block;
+            min-width: 0.6em;
+            text-align: center;
+            background: linear-gradient(135deg, #FFD700, #FF69B4, #FF1493);
+            background-size: 200% 200%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: subtleGradientFlow 10s ease infinite;
+            filter: drop-shadow(0 0 8px rgba(255, 20, 147, 0.3));
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .timer-display {
+                font-size: clamp(3rem, 12vw, 8rem);
+            }
+            
+            .heart, .flame, .pinch {
+                font-size: 1.8rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .timer-display {
+                font-size: clamp(2.5rem, 10vw, 6rem);
+            }
+            
+            .heart, .flame, .pinch {
+                font-size: 1.5rem;
+            }
+            
+            .timer-container {
+                padding: 1rem;
+            }
+        }
+        
+        @media (max-width: 360px) {
+            .timer-display {
+                font-size: clamp(2rem, 10vw, 5rem);
+                letter-spacing: 0.1em;
+            }
+            
+            .heart, .flame, .pinch {
+                font-size: 1.2rem;
+            }
+        }
+
+        /* Completed state */
+        .timer-display.completed {
+            background: linear-gradient(135deg, #FF0000, #FF1493);
+            background-size: 200% 200%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: completedPulse 1.5s ease-in-out infinite, subtleGradientFlow 10s ease infinite;
+            filter: drop-shadow(0 0 12px rgba(255, 0, 0, 0.5));
+        }
+
+        @keyframes completedPulse {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.04);
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Floating hearts -->
+    <div class="heart">❤️</div>
+    <div class="heart">💕</div>
+    <div class="heart">💖</div>
+    <div class="heart">💗</div>
+    <div class="heart">💓</div>
+    <div class="heart">💝</div>
+    
+    <!-- Floating flames -->
+    <div class="flame">🔥</div>
+    <div class="flame">🔥</div>
+    <div class="flame">🔥</div>
+    <div class="flame">🔥</div>
+    
+    <!-- Floating pinch gestures -->
+    <div class="pinch">🤏</div>
+    <div class="pinch">🤏</div>
+    <div class="pinch">🤏</div>
+
+    <div class="timer-container">
+        <div class="timer-display" id="timer">00:00:00</div>
+    </div>
+
+    <script>
+        // ============================================
+        // CONFIGURATION - Edit these values
+        // ============================================
+        
+        // Target date and time with timezone offset
+        // Format: 'YYYY-MM-DD HH:MM:SS UTC±HH:MM'
+        // Examples: '2026-12-31 23:59:59 UTC+2', '2026-06-15 14:30:00 UTC-5'
+        const TARGET_DATE = '2026-04-11 18:00:00 UTC+2';
+        
+        // Note: The timezone offset (e.g., UTC+2) is parsed from TARGET_DATE above
+        // No need for a separate timezone variable
+        
+        // ============================================
+        // END CONFIGURATION
+        // ============================================
+
+        const timerElement = document.getElementById('timer');
+        let lastDisplayedTime = '';
+
+        /**
+         * Parse the target date string with UTC offset and convert it to a Date object
+         */
+        function getTargetDate() {
+            // Parse the date string with UTC offset
+            // Format: 'YYYY-MM-DD HH:MM:SS UTC±HH:MM' or 'YYYY-MM-DD HH:MM:SS UTC±HH'
+            const parts = TARGET_DATE.match(/^(\d{4})-(\d{2})-(\d{2})\s+(\d{2}):(\d{2}):(\d{2})\s+UTC([+-])(\d{1,2})(?::(\d{2}))?$/);
+            
+            if (!parts) {
+                console.error('Invalid date format. Use: YYYY-MM-DD HH:MM:SS UTC±HH or UTC±HH:MM');
+                return new Date();
+            }
+            
+            const [, year, month, day, hours, minutes, seconds, sign, offsetHours, offsetMinutes] = parts;
+            
+            // Create UTC date
+            const utcDate = Date.UTC(
+                parseInt(year),
+                parseInt(month) - 1,
+                parseInt(day),
+                parseInt(hours),
+                parseInt(minutes),
+                parseInt(seconds)
+            );
+            
+            // Calculate offset in milliseconds
+            const offsetMs = (parseInt(offsetHours) * 60 + (parseInt(offsetMinutes) || 0)) * 60 * 1000;
+            const adjustedOffset = sign === '+' ? -offsetMs : offsetMs;
+            
+            // Return the target date adjusted for the timezone offset
+            return new Date(utcDate + adjustedOffset);
+        }
+
+        /**
+         * Format a number to always have 2 digits
+         */
+        function padZero(num) {
+            return String(num).padStart(2, '0');
+        }
+
+        /**
+         * Calculate and display the remaining time
+         */
+        function updateTimer() {
+            const now = new Date();
+            const target = getTargetDate();
+            const difference = target - now;
+
+            if (difference <= 0) {
+                // Countdown completed
+                const displayTime = '00:00:00';
+                if (displayTime !== lastDisplayedTime) {
+                    timerElement.innerHTML = formatTimeDisplay(0, 0, 0);
+                    timerElement.classList.add('completed');
+                    lastDisplayedTime = displayTime;
+                }
+                return;
+            }
+
+            // Calculate hours, minutes, and seconds
+            const totalSeconds = Math.floor(difference / 1000);
+            const hours = Math.floor(totalSeconds / 3600);
+            const minutes = Math.floor((totalSeconds % 3600) / 60);
+            const seconds = totalSeconds % 60;
+
+            const displayTime = `${padZero(hours)}:${padZero(minutes)}:${padZero(seconds)}`;
+            
+            // Only update DOM if the time has changed
+            if (displayTime !== lastDisplayedTime) {
+                timerElement.innerHTML = formatTimeDisplay(hours, minutes, seconds);
+                timerElement.classList.remove('completed');
+                lastDisplayedTime = displayTime;
+            }
+        }
+
+        /**
+         * Format the time display with proper HTML structure
+         */
+        function formatTimeDisplay(hours, minutes, seconds) {
+            return `<span class="time-unit">${padZero(hours)}</span><span class="separator">:</span><span class="time-unit">${padZero(minutes)}</span><span class="separator">:</span><span class="time-unit">${padZero(seconds)}</span>`;
+        }
+
+        // Initialize and start the timer
+        updateTimer();
+        setInterval(updateTimer, 1000);
+
+        // Log configuration for debugging (can be removed in production)
+        console.log('Countdown Timer Configuration:');
+        console.log('Target Date:', TARGET_DATE);
+        console.log('Parsed Target Date:', getTargetDate());
+        console.log('Current Time:', new Date());
+    </script>
+</body>
+</html>
