@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Text Extractor</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f5f5;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            padding: 30px;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 24px;
+            font-weight: 600;
+        }
+
+        .workflow {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .box {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .box-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+            padding: 0 4px;
+        }
+
+        .box-title {
+            font-weight: 600;
+            color: #555;
+            font-size: 14px;
+        }
+
+        .box-stats {
+            font-size: 12px;
+            color: #888;
+        }
+
+        textarea {
+            width: 100%;
+            height: 500px;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+            font-size: 13px;
+            resize: vertical;
+            transition: border-color 0.2s;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: #4CAF50;
+        }
+
+        textarea:read-only {
+            background-color: #f9f9f9;
+            cursor: not-allowed;
+        }
+
+        .arrow {
+            text-align: center;
+            color: #4CAF50;
+            font-size: 24px;
+            padding: 10px 0;
+            display: none;
+        }
+
+        .instructions {
+            background: #e8f5e9;
+            border-left: 4px solid #4CAF50;
+            padding: 15px;
+            margin-top: 20px;
+            border-radius: 4px;
+        }
+
+        .instructions h3 {
+            color: #2e7d32;
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+
+        .instructions ol {
+            margin-left: 20px;
+            color: #555;
+            font-size: 13px;
+        }
+
+        .instructions li {
+            margin-bottom: 4px;
+        }
+
+        @media (max-width: 1200px) {
+            .workflow {
+                grid-template-columns: 1fr;
+            }
+            
+            .arrow {
+                display: block;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Text Extractor & Translator</h1>
+        
+        <div class="workflow">
+            <div class="box">
+                <div class="box-header">
+                    <span class="box-title">1. Original HTML Text</span>
+                    <span class="box-stats" id="stats1">0 words | 0 lines</span>
+                </div>
+                <textarea id="box1" placeholder="Paste your HTML text here..."></textarea>
+            </div>
+
+            <div class="box">
+                <div class="box-header">
+                    <span class="box-title">2. Extracted Text (Edit/Translate Here)</span>
+                    <span class="box-stats" id="stats2">0 words | 0 lines</span>
+                </div>
+                <textarea id="box2" placeholder="Extracted text will appear here. Edit or translate as needed..."></textarea>
+            </div>
+
+            <div class="box">
+                <div class="box-header">
+                    <span class="box-title">3. Final HTML Output</span>
+                    <span class="box-stats" id="stats3">0 words | 0 lines</span>
+                </div>
+                <textarea id="box3" readonly placeholder="Final HTML with your changes will appear here..."></textarea>
+            </div>
+        </div>
+
+        <div class="instructions">
+            <h3>How to use:</h3>
+            <ol>
+                <li>Paste your HTML text in Box 1</li>
+                <li>Box 2 automatically extracts clean text (one line per item)</li>
+                <li>Edit or translate the text in Box 2</li>
+                <li>Box 3 automatically reconstructs HTML with your changes</li>
+            </ol>
+        </div>
+    </div>
+
+    <script>
+        const box1 = document.getElementById('box1');
+        const box2 = document.getElementById('box2');
+        const box3 = document.getElementById('box3');
+        const stats1 = document.getElementById('stats1');
+        const stats2 = document.getElementById('stats2');
+        const stats3 = document.getElementById('stats3');
+
+        // Store HTML structure for reconstruction
+        let htmlStructure = [];
+
+        // Extract text from HTML - works with ANY HTML tags
+        function extractText(html) {
+            if (!html.trim()) {
+                return '';
+            }
+
+            htmlStructure = [];
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = html;
+
+            const textLines = [];
+            
+            // Walk through ALL text nodes in the document
+            const walker = document.createTreeWalker(
+                tempDiv,
+                NodeFilter.SHOW_TEXT,
+                null,
+                false
+            );
+
+            let textNode;
+            while (textNode = walker.nextNode()) {
+                const text = textNode.textContent.replace(/\s+/g, ' ').trim();
+                if (text) {
+                    textLines.push(text);
+                    htmlStructure.push({
+                        text: text,
+                        originalContent: textNode.textContent,
+                        node: textNode
+                    });
+                }
+            }
+            
+            return textLines.join('\n');
+        }
+
+        // Reconstruct HTML with new text - works with ANY HTML tags
+        function reconstructHTML(newText) {
+            if (!newText.trim() || htmlStructure.length === 0) {
+                return '';
+            }
+
+            const newLines = newText.split('\n').map(line => line.trim()).filter(line => line);
+            
+            if (newLines.length !== htmlStructure.length) {
+                return '⚠️ Warning: Number of lines changed. Cannot reconstruct HTML safely.\nOriginal: ' + htmlStructure.length + ' lines, New: ' + newLines.length + ' lines';
+            }
+
+            // Create a deep copy of the original HTML structure
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = box1.value;
+
+            // Walk through ALL text nodes and replace them
+            const walker = document.createTreeWalker(
+                tempDiv,
+                NodeFilter.SHOW_TEXT,
+                null,
+                false
+            );
+
+            let lineIndex = 0;
+            let textNode;
+            while (textNode = walker.nextNode()) {
+                const text = textNode.textContent.replace(/\s+/g, ' ').trim();
+                if (text && lineIndex < newLines.length) {
+                    // Replace the entire text node content with the new text
+                    // This will normalize any internal line breaks, which is correct since
+                    // the user edited the normalized version in box 2
+                    textNode.textContent = newLines[lineIndex];
+                    lineIndex++;
+                }
+            }
+            
+            return tempDiv.innerHTML;
+        }
+
+        // Count words and lines (excluding HTML)
+        function countStats(text) {
+            if (!text.trim()) {
+                return { words: 0, lines: 0 };
+            }
+
+            // Remove HTML tags for counting
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = text;
+            const plainText = tempDiv.textContent || tempDiv.innerText || '';
+            
+            const lines = plainText.split('\n').filter(line => line.trim()).length;
+            const words = plainText.trim().split(/\s+/).filter(word => word).length;
+            
+            return { words, lines };
+        }
+
+        // Update stats display
+        function updateStats(textarea, statsElement) {
+            const stats = countStats(textarea.value);
+            statsElement.textContent = `${stats.words} words | ${stats.lines} lines`;
+        }
+
+        // Box 1 input handler
+        box1.addEventListener('input', () => {
+            const extracted = extractText(box1.value);
+            box2.value = extracted;
+            updateStats(box1, stats1);
+            updateStats(box2, stats2);
+            
+            // Trigger box3 update
+            box2.dispatchEvent(new Event('input'));
+        });
+
+        // Box 2 input handler
+        box2.addEventListener('input', () => {
+            const reconstructed = reconstructHTML(box2.value);
+            box3.value = reconstructed;
+            updateStats(box2, stats2);
+            updateStats(box3, stats3);
+        });
+
+        // Initialize stats
+        updateStats(box1, stats1);
+        updateStats(box2, stats2);
+        updateStats(box3, stats3);
+    </script>
+</body>
+</html>
