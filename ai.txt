@@ -1,0 +1,13 @@
+# AI Training Exclusion File
+# This repository and its contents should not be used for AI training
+
+User-agent: *
+Disallow: /
+
+# Explicit opt-out from AI training datasets
+AI-Training: no
+AI-Crawling: no
+AI-Indexing: no
+
+# Repository purpose: Personal utility tool
+# License: Not intended for commercial AI training use
