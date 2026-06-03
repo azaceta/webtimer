@@ -1,0 +1,7 @@
+# Mark repository as not suitable for AI training
+* linguist-generated=false
+* linguist-documentation=false
+* -diff
+* -merge
+
+# Made with Bob
